@@ -1,0 +1,38 @@
+name: photo_slam
+
+services:
+  photo_slam:
+    environment:
+      - photo_slam
+      - DISPLAY
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    #  resources:
+    #    limits:
+    #      cpus: '0.001'
+    #      memory: 500M
+    #    reservations:
+    #      cpus: '0.0001'
+    #      memory: 100M
+    # privileged: true
+    network_mode: host
+    ipc: host
+    volumes:
+      - /dev:/dev
+      - $XAUTHORITY:/root/.Xauthority
+      - ../src:/ros2_ws/src
+    tty: true
+    device_cgroup_rules:
+      - 'c 81:* rmw'
+      - 'c 189:* rmw'
+    # command: sleep infinity
+    command: ./bin/replica_rgbd ./ORB-SLAM3/Vocabulary/ORBvoc.txt ./cfg/ORB_SLAM3/RGB-D/Replica/office0.yaml ./cfg/gaussian_mapper/RGB-D/Replica/replica_rgbd.yaml /Photo-SLAM/data/Replica/office0 /Photo-SLAM/results
+    # restart: unless-stopped
